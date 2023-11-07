@@ -4,9 +4,7 @@ import wave # used to read and write audio data in WAV format
 import requests # send HTTPS requests and handle responses
 import io # used to create an in-memory buffer
 #from LED import *
-from HANDLE_VIB import *
 import time
-import multiprocessing
 
 # Provide a list of available audio device on my system, their IDs, and their names. 
 def list_audio_devices():
@@ -54,7 +52,7 @@ def post_audio_and_receive_response():
     # response = requests.post("http://localhost:3000/uint", data=audio_data, headers=headers)
     return response.json()
 
-def record_audio_and_present_response(response_queue):
+def record_audio_and_present_response():
 	# Configure and start an audio stream(=recording)
     stream = audio.open(format=FORMAT, channels=CHANNELS,
                         rate=RATE, input=True,
@@ -72,20 +70,12 @@ def record_audio_and_present_response(response_queue):
                 audio_chunks.pop(0)
 
         response_data = post_audio_and_receive_response()
-        response_queue.put(response_data) # insert data into the queue.
-        
-        receive_time = time.time()
+
         print(response_data)
-        print("elapsed:{}".format(receive_time - start_time))
 
     stream.stop_stream()
     stream.close()
     audio.terminate
 
 if __name__ == "__main__":
-    response_queue = multiprocessing.Queue() # Inter-Process Communication: "Queue" to pass "response_data" to "alarm_vibration()"
-
-    vib_motor_process = multiprocessing.Process(target=alarm_vibration, args=(response_queue, )) # Create a new process dedicated to vibration
-    vib_motor_process.start() # Initiate a separate process and begin executing the target function. Parallel execution in a separate memory space.
-
-    record_audio_and_present_response(response_queue)
+    record_audio_and_present_response()
