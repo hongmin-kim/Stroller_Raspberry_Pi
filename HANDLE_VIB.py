@@ -1,33 +1,13 @@
 import RPi.GPIO as GPIO
 import time
 
-# # Pin Definition
-# vibMotorA = 7
-# vibMotorB = 11
-
-# # Pin Setting
-# GPIO.setmode(GPIO.BOARD)
-# GPIO.setup(vibMotorA, GPIO.OUT)
-# GPIO.setup(vibMotorB, GPIO.OUT)
-
-# # Create a PWM object with frequency of 1000Hz
-# vibPwm1 = GPIO.PWM(vibMotorA, 1000)
-# vibPwm2 = GPIO.PWM(vibMotorB, 1000)
-
-# # Initialize with 0% duty cycle
-# vibPwm1.start(0)
-# vibPwm2.start(0)
-
-# # Variable for "Rise" vibraiton pattern
-# step_time = 0.01
-
-def alarm_vibration(response_queue):
+def alarm_vibration(response_queue_vib):
     # Pin Definition
     vibMotorA = 7
     vibMotorB = 11
 
     # Pin Setting
-    GPIO.setmode(GPIO.BOARD)
+    GPIO.setmode(GPIO.BOARD) # no breadboard
     GPIO.setup(vibMotorA, GPIO.OUT)
     GPIO.setup(vibMotorB, GPIO.OUT)
 
@@ -39,31 +19,18 @@ def alarm_vibration(response_queue):
     vibPwm1.start(0)
     vibPwm2.start(0)
 
-    # Variable for "Rise" vibraiton pattern
-    step_time = 0.01
-    # Parse sound classification arriving from server
-    # Note that in send_audio.py, response_data is a dictionary
+    # Parse sound classification result arriving from server
     # response_data ex: {'Alarm': False, 'Label': 'Infant Crying', 'Tagging_rate': 0.00, 'Switch': True}
     while True:
-        response_data = response_queue.get() # retrieve data from the queue. Waits for data to arrive in real-time.
+        response_data = response_queue_vib.get() # retrieve data from the queue. Waits for data to arrive in real-time.
         #print("vib_motor_process - response_data['Label']: {}".format(response_data['Label']))
 
         if ( response_data['Alarm'] and response_data['Switch'] and response_data['Label'] == 'Infant Crying' ): # "Steady"
-            # time1 = time.time()
             vibPwm1.ChangeDutyCycle(50) # continuous and steady vibration alert
             vibPwm2.ChangeDutyCycle(0)
-            # time2 = time.time()
-            # print(time2 - time1)
-            print("IN")
-            print("IN")
-            print("IN")
-            
 
         elif ( response_data['Alarm'] and response_data['Switch'] and response_data['Label'] == 'Gunshot' ): # Burst
             burst_start_time = time.time()
-            print("IN")
-            print("IN")
-            print("IN")
             
             while ( response_data['Alarm'] and response_data['Switch'] and response_data['Label'] == 'Gunshot' ):
                 current_time = time.time()
@@ -84,9 +51,6 @@ def alarm_vibration(response_queue):
                     vibPwm1.ChangeDutyCycle(0)
                     vibPwm2.ChangeDutyCycle(0)
                     break
-            
-            time3 = time.time()
-            print(time3-burst_start_time)
 
         elif ( response_data['Alarm'] and response_data['Switch'] and response_data['Label'] == 'Glass' ): # Rise
             rise_start_time = time.time()
@@ -105,3 +69,20 @@ def alarm_vibration(response_queue):
         else:
             vibPwm1.ChangeDutyCycle(0)
             vibPwm2.ChangeDutyCycle(0)
+
+    GPIO.cleanup()
+
+def alarm_vibration_debug(response_queue_vib):
+
+    while True:
+        response_data = response_queue_vib.get()
+
+        if ( response_data['Alarm'] and response_data['Switch'] and response_data['Label'] == 'Infant Crying' ): # "Steady"
+            print("alarm_vibration_debug: 'Infant Crying'")
+
+        elif ( response_data['Alarm'] and response_data['Switch'] and response_data['Label'] == 'Gunshot' ): # Burst
+            print("alarm_vibration_debug: 'Gunshot'")
+
+        elif ( response_data['Alarm'] and response_data['Switch'] and response_data['Label'] == 'Glass' ): # Rise
+            print("alarm_vibration_debug: 'Glass'")
+
