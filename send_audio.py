@@ -9,6 +9,7 @@ import multiprocessing
 import numpy as np
 from HANDLE_VIB import alarm_vibration, alarm_vibration_debug
 from LED import alarm_led, alarm_led_debug
+import matplotlib.pyplot as plt
     
 
 # Provide a list of available audio device on my system, their IDs, and their names. 
@@ -32,7 +33,7 @@ list_audio_devices()
 # CHUNK: Number of bytes of audio data read at a time. Smaller CHUNK reduces latency but increases computing needed.
 #        Duration of CHUNK = (# of samples in a CHUNK) / (sample rate) = 0.0625s.
 # MAX_CHUNKS: Packs 10 seconds of sound for real-time processing efficiency
-FORMAT = pyaudio.paInt32
+FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 16000
 CHUNK = 1000
@@ -53,8 +54,11 @@ audio_chunks = [] # Store and manage audio data before sending
 
 def calculate_decibels(data):
     data_flatten = np.frombuffer(data, dtype=np.int16)
-    data_flatten = data_flatten.astype(np.int32)
+    data_flatten = data_flatten.astype(np.float32)
     rms = np.sqrt(np.mean(data_flatten ** 2))
+    # plt.figure(figsize=(10,4))
+    # plt.plot(data_flatten)
+    # plt.savefig("temp.jpg")
     decibels = 20 * np.log10(rms)
     return decibels
 
@@ -74,6 +78,7 @@ def post_audio_and_receive_response():
     decibel_level = {
         "decibels": decibel_level,
     }
+    print(decibel_level)
     json_data = json.dumps(decibel_level)
     requests.post(f"{base_url}:3000/send_decibel", data=json_data, headers=headers)
     
@@ -81,6 +86,7 @@ def post_audio_and_receive_response():
     # http://<Server IP or domain>:3000/uint
     response = requests.post(f"{base_url}:3000/uint", data=audio_data, headers=headers)
     # response = requests.post("http://localhost:3000/uint", data=audio_data, headers=headers)
+    print(response)
     return response.json()
 
 def record_audio_and_present_response(response_queue_vib, response_queue_led):
