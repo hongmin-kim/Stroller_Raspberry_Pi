@@ -7,7 +7,7 @@ def alarm_led(response_queue_led):
     LED_Y = 5
 
     # Pin Setting
-    GPIO.setmoode(GPIO.BOARD) # no breadboard
+    GPIO.setmode(GPIO.BOARD) # no breadboard
     GPIO.setup(LED_R, GPIO.OUT)
     GPIO.setup(LED_G, GPIO.OUT)
     GPIO.setup(LED_Y, GPIO.OUT)

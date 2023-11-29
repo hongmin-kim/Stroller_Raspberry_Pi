@@ -7,7 +7,7 @@ num_pixels = 8
 def alarm_led_neopixel(response_que_led):
     # Pin Definiiton
     num_pixels = 8
-    pixels = neopixel.NeoPixel(board.D18, num_pixels)
+    pixels = neopixel.NeoPixel(board.D18, num_pixels) # Physical pin number 12
 
     # Parse sound classification result arriving from server
     # response_data ex: {'Alarm': False, 'Label': 'Infant Crying', 'Tagging_rate': 0.00, 'Switch': True}
@@ -15,7 +15,7 @@ def alarm_led_neopixel(response_que_led):
         response_data = response_que_led.get() # retrieve data from the queue. Waits for data to arrive in real-time.
         
         if ( response_data['Alarm'] and response_data['Switch'] and response_data['Label'] == 'Infant Crying' ):
-            pixels.fill((0, 255, 0))
+            pixels.fill((0, 255, 0)) # Green
         
         elif ( response_data['Alarm'] and response_data['Switch'] and response_data['Label'] == 'Car horn' ):
             yellow_start_time = time.time()
@@ -24,7 +24,7 @@ def alarm_led_neopixel(response_que_led):
                 current_time = time.time()
 
                 if (current_time - yellow_start_time <= 0.2):
-                    pixels.fill((255, 210, 0))
+                    pixels.fill((255, 210, 0)) # Yellow
                 elif (current_time - yellow_start_time <= 0.4):
                     pixels.fill((0, 0, 0))
                 elif (current_time - yellow_start_time <= 0.6):
@@ -38,6 +38,18 @@ def alarm_led_neopixel(response_que_led):
         elif ( response_data['Alarm'] and response_data['Switch'] and response_data['Label'] == 'Siren' ):
             rotate_red(0.0625, 2)
 
+        elif ( response_data['Alarm'] and response_data['Switch'] ): # Other sounds
+            blue_start_time = time.time()
+            
+            while ( response_data['Alarm'] and response_data['Switch'] ):
+                current_time = time.time()
+
+                if (current_time - blue_start_time <= 0.5):
+                    pixels.fill((0, 0, 255))
+                else:
+                    pixels.fill((0, 0, 0))
+                    break
+
         else:
             pixels.fill((0, 0, 0))
 
@@ -46,13 +58,16 @@ def alarm_led_neopixel_debug(response_queue_led):
         response_data = response_queue_led.get()
 
         if ( response_data['Alarm'] and response_data['Switch'] and response_data['Label'] == 'Infant Crying' ):
-            print("LED_'Infant Crying'")
+            print("alarm_led_neopixel_debug: 'Infant Crying'")
 
         elif ( response_data['Alarm'] and response_data['Switch'] and response_data['Label'] == 'Car horn' ):
-            print("LED_'Gunshot'")
+            print("alarm_led_neopixel_debug: 'Gunshot'")
 
         elif ( response_data['Alarm'] and response_data['Switch'] and response_data['Label'] == 'Glass' ):
-            print("LED_'Glass'")
+            print("alarm_led_neopixel_debug: 'Glass'")
+        
+        elif ( response_data['Alarm'] and response_data['Switch'] ):
+            print("alarm_led_neopixel_debug: {}".format(response_data['Label']))
 
 def rotate_red(duration, repeat):
     pixels = neopixel.NeoPixel(board.D18, num_pixels)

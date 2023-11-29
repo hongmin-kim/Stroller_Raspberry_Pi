@@ -121,12 +121,31 @@ import neopixel
 import board
 import time
 
-# RED = 0x100000
+num_pixels = 8
+pixels = neopixel.NeoPixel(board.D18, num_pixels)
 
-pixels = neopixel.NeoPixel(board.D18, 8)
-# for i in range(len(pixels)):
-#     pixels[i] = RED
+def rotate_red(duration, repeat):
+    pixels = neopixel.NeoPixel(board.D18, num_pixels)
 
-pixels.fill((125, 60, 10))
+    for _ in range(repeat):
+        for i in range(num_pixels):
+            pixels.fill((0, 0, 0))  # Turn off all pixels
+            pixels[i] = (255, 0, 0)  # Set the current pixel to red
+            # pixels[(i+4)%num_pixels] = (255, 0, 0)
+            pixels.show()
+            time.sleep(duration)
+        pixels.fill((0, 0, 0))  # Turn off all pixels at the end of a cycle
+        pixels.show()
+
+pixels.fill((0, 255, 0))
 time.sleep(3)
 pixels.fill((0, 0, 0))
+
+start_time = time.time()
+current_time = time.time()
+while (current_time - start_time <= 3):
+    rotate_red(0.0625, 2)
+    current_time = time.time()
+
+
+

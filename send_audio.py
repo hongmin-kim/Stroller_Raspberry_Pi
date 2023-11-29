@@ -87,7 +87,7 @@ def post_audio_and_receive_response():
     # http://<Server IP or domain>:3000/uint
     response = requests.post(f"{base_url}:3000/uint", data=audio_data, headers=headers)
     # response = requests.post("http://localhost:3000/uint", data=audio_data, headers=headers)
-    print(response)
+    # print(response)
     return response.json()
 
 def record_audio_and_present_response(response_queue_vib, response_queue_led):
@@ -97,7 +97,7 @@ def record_audio_and_present_response(response_queue_vib, response_queue_led):
                         frames_per_buffer=CHUNK)
     while True:
         start_time = time.time()
-		# Every loop, "stream" object reads 1024 bytes of audio and stores in audio_chunks
+		# Every loop, "stream" object reads 1000 bytes of audio and stores in audio_chunks
         for i in range(ONE_SEC_CHUNKS):
             data = stream.read(CHUNK)
             audio_chunks.append(data)

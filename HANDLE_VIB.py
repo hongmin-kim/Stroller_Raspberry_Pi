@@ -2,12 +2,12 @@ import RPi.GPIO as GPIO
 import time
 
 def alarm_vibration(response_queue_vib):
-    # Pin Definition
-    vibMotorA = 4
-    vibMotorB = 17
-
+    # Pin Definition (GPIO.BCM)
+    vibMotorA = 4 # Physical pin number 7
+    vibMotorB = 17 # Physical pin number 11
+ 
     # Pin Setting
-    GPIO.setmode(GPIO.BCM) # no breadboard
+    GPIO.setmode(GPIO.BCM)
     GPIO.setup(vibMotorA, GPIO.OUT)
     GPIO.setup(vibMotorB, GPIO.OUT)
 
@@ -26,7 +26,7 @@ def alarm_vibration(response_queue_vib):
         #print("vib_motor_process - response_data['Label']: {}".format(response_data['Label']))
 
         if ( response_data['Alarm'] and response_data['Switch'] and response_data['Label'] == 'Infant Crying' ): # "Steady"
-            vibPwm1.ChangeDutyCycle(50) # continuous and steady vibration alert
+            vibPwm1.ChangeDutyCycle(70) # continuous and steady vibration alert
             vibPwm2.ChangeDutyCycle(0)
 
         elif ( response_data['Alarm'] and response_data['Switch'] and response_data['Label'] == 'Car horn' ): # Burst
@@ -66,6 +66,20 @@ def alarm_vibration(response_queue_vib):
                 vibPwm1.ChangeDutyCycle(duty)
                 vibPwm2.ChangeDutyCycle(0)
 
+        elif ( response_data['Alarm'] and response_data['Switch'] ): # Other sounds
+            other_start_time = time.time()
+
+            while ( response_data['Alarm'] and response_data['Switch'] ):
+                current_time = time.time()
+
+                if (current_time - other_start_time <= 0.5):
+                    vibPwm1.ChangeDutyCycle(70)
+                    vibPwm2.ChangeDutyCycle(0)
+                else:
+                    vibPwm1.ChangeDutyCycle(0)
+                    vibPwm2.ChangeDutyCycle(0)
+                    break
+
         else:
             vibPwm1.ChangeDutyCycle(0)
             vibPwm2.ChangeDutyCycle(0)
@@ -85,4 +99,7 @@ def alarm_vibration_debug(response_queue_vib):
 
         elif ( response_data['Alarm'] and response_data['Switch'] and response_data['Label'] == 'Glass' ): # Rise
             print("alarm_vibration_debug: 'Glass'")
+
+        elif ( response_data['Alarm'] and response_data['Switch'] ):
+            print("alarm_vibration_debug: {}".format(response_data['Label']))
 

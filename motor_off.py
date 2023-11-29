@@ -2,8 +2,8 @@ import RPi.GPIO as GPIO
 import time
 
 # Pin Definition
-vibMotorA = 4
-vibMotorB = 17
+vibMotorA = 7
+vibMotorB = 11
 
 # Pin Setting
 GPIO.setmode(GPIO.BOARD) # "BOARD" is used when we don't use a breadboard
